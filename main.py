@@ -1,4 +1,5 @@
 #   File: main.py
+# Unnecessary comment
 
 from pygame import *;
 from game import *;
