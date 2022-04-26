@@ -73,8 +73,8 @@ class Menu:
                 ret = self.__mouseMenuSelection(event.pos)
                 if (ret == 3):
                     self.menuEnd = Config.CODE_KILL
-                # elif (ret == 2):
-                #     self.menuEnd = Config.MENU_CODE_HIGH_SCORE
+                elif (ret == 2):
+                    self.menuEnd = Config.MENU_CODE_HIGH_SCORE
                 elif (ret == 1):
                     self.menuEnd = Config.MENU_CODE_DEMO
                 elif (ret == 0):

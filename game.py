@@ -87,7 +87,7 @@ class Game:
 
         self.app.init(self.cnt_main, self.screen)
 
-    def start(self, n_airplanes):
+    def start(self, n_airplanes, n_destinations):
         clock = pygame.time.Clock()
         #nextDemoEventTime = random.randint(10000,20000)
         nextDemoEventTime = 6000 # first demo event time is 6 seconds after start of demo
@@ -129,7 +129,7 @@ class Game:
             pygame.draw.circle(self.screen, Game.RADAR_CIRC_COLOR, (int(Game.AERIALPANE_W / 2), int(Game.AERIALPANE_H / 2)), int(Game.RADAR_RADIUS), 1)
 
             #Draw destinations
-            for x in self.destinations:
+            for x in self.destinations[:int(n_destinations)]:
                 x.draw(self.screen)
 
             #Move/redraw/collide aircraft
@@ -217,7 +217,7 @@ class Game:
             self.cnt_fspane.remove(a.getFS())
 
         #4: Spawn new aircraft due for spawning
-        if(len(self.aircraftspawntimes) != 0 and len(self.aircraft) < n_airplanes): ### Change 2 to number of airplanes
+        if(len(self.aircraftspawntimes) != 0 and len(self.aircraft) < int(n_airplanes)): ### Change 2 to number of airplanes
             if self.ms_elapsed >= self.aircraftspawntimes[0]:
                 sp = self.aircraftspawns[0]
                 if(len(self.aircraft) < math.floor(Game.FSPANE_H / 60)):
