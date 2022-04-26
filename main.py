@@ -74,17 +74,7 @@ class Main:
                     state = STATE_MENU
                 elif (gameEndCode == Config.GAME_CODE_AC_COLLIDE):
                     state = STATE_GAME ###
-            elif (state == STATE_DEMO):
-                game = Game(self.screen, True)
-                (gameEndCode, score) = game.start()
-                state = STATE_MENU
-            elif (state == STATE_HIGH):
-                highEndCode = self.high.start(score)
-                state = STATE_GAME     #####
-                score = 0
-            elif (state == STATE_KILL):
-                exit = 1
-
+            
 if __name__ == '__main__':
     game_main = Main()
     game_main.run()
