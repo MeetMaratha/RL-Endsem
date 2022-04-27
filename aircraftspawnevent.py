@@ -29,14 +29,26 @@ class AircraftSpawnEvent:
 
 
     @staticmethod
-    def generateGameSpawnEvents(screen_w, screen_h, destinations):
+    def generateGameSpawnEvents(screen_w, screen_h, destinations, n_spawn_points):
         randtime = [1]
         randspawnevent = []
+        randspawnpoints = []
+        for i in range(n_spawn_points):
+            if i % 4 == 0:
+                randspawnpoints.append((random.randint(0, screen_w), 0))
+            elif i % 4 == 1:
+                randspawnpoints.append((screen_w, random.randint(0, screen_h)))
+            elif i % 4 == 2:
+                randspawnpoints.append((random.randint(0, screen_w), screen_h))
+            elif i % 4 == 3:
+                randspawnpoints.append((0, random.randint(0,screen_h)))
+        print(len(randspawnpoints))
         for x in range(1, Config.NUMBEROFAIRCRAFT):
             randtime.append(random.randint(1, Config.GAMETIME))
         randtime.sort()
         for x in randtime:
-            randspawn, side = AircraftSpawnEvent.__generateRandomSpawnPoint(screen_w, screen_h)
+            # randspawn, side = AircraftSpawnEvent.__generateRandomSpawnPoint(screen_w, screen_h)
+            randspawn, side = AircraftSpawnEvent.__generateRandomSpawnPoint(screen_w, screen_h, randspawnpoints)
             if (side == 1):
                 def t1(d): 
                     l = d.getLocation()
@@ -67,17 +79,19 @@ class AircraftSpawnEvent:
         return (randtime, randspawnevent)
 
     @staticmethod
-    def __generateRandomSpawnPoint(screen_w, screen_h):
-        side = random.randint(1, 4)
-        previous = 7
-        if side == 1 and side != previous:
-            loc = (random.randint(0, screen_w), 0)
-        elif side == 2 and side != previous:
-            loc = (screen_w, random.randint(0, screen_h))
-        elif side == 3 and side != previous:
-            loc = (random.randint(0, screen_w), screen_h)
-        elif side == 4 and side != previous:
-            loc = (0, random.randint(0, screen_h))
-
-        previous = side
+    def __generateRandomSpawnPoint(screen_w, screen_h, randspawnpoints):
+        # side = random.randint(1, 4)
+        # previous = 7
+        # if side == 1 and side != previous:
+        #     loc = (random.randint(0, screen_w), 0)
+        # elif side == 2 and side != previous:
+        #     loc = (screen_w, random.randint(0, screen_h))
+        # elif side == 3 and side != previous:
+        #     loc = (random.randint(0, screen_w), screen_h)
+        # elif side == 4 and side != previous:
+        #     loc = (0, random.randint(0, screen_h))
+        index = random.randint(0, len(randspawnpoints) -1)
+        print(index)
+        loc = randspawnpoints[index]
+        side = index % 4 +1
         return (loc), side

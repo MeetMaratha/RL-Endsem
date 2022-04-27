@@ -47,7 +47,7 @@ class Game:
         Game.FS_H = 60
         Game.RADAR_RADIUS = (Game.AERIALPANE_H - 50) / 2
         AircraftSpawnEvent.spawnpoint = Config.NUMBEROFSPAWNPOINTS
-        
+        print(f'Number of spawn points : {AircraftSpawnEvent.spawnpoint}')
         #Imagey type stuff
         self.font = pygame.font.Font(None, 30)
         self.screen = screen
@@ -354,9 +354,9 @@ class Game:
         return foundac
 
     def __generateAircraftSpawnEvents(self):
-        (self.aircraftspawntimes, self.aircraftspawns) = AircraftSpawnEvent.generateGameSpawnEvents(Game.AERIALPANE_W, Game.AERIALPANE_H, self.destinations)
+        (self.aircraftspawntimes, self.aircraftspawns) = AircraftSpawnEvent.generateGameSpawnEvents(Game.AERIALPANE_W, Game.AERIALPANE_H, self.destinations, Config.NUMBEROFSPAWNPOINTS)
         while self.__areSpawnEventsTooClose(self.aircraftspawntimes, self.aircraftspawns) == True:
-            (self.aicraftspawntime, self.aircraftspawns) = AircraftSpawnEvent.generateGameSpawnEvents(Game.AERIALPANE_W, Game.AERIALPANE_H, self.destinations)
+            (self.aicraftspawntime, self.aircraftspawns) = AircraftSpawnEvent.generateGameSpawnEvents(Game.AERIALPANE_W, Game.AERIALPANE_H, self.destinations, Config.NUMBEROFSPAWNPOINTS)
 
     def __areSpawnEventsTooClose(self, times, spawns):
         ret = False
