@@ -53,10 +53,13 @@ class Main:
                 menuEndCode = self.menu.start()
 
                 # Getting all these values from user
-                self.n_airplanes = self.menu.n_planes
-                self.n_spawn = self.menu.n_spawn_points
-                self.n_destinations = self.menu.n_destinations
-                self.n_obstacles = self.menu.n_obstacles
+                self.n_airplanes = int(self.menu.n_planes)
+                if self.menu.n_spawn_points != '':
+                    Config.NUMBEROFSPAWNPOINTS = int(self.menu.n_spawn_points)
+                if self.menu.n_destinations != '':
+                    Config.NUMBEROFDESTINATIONS = int(self.menu.n_destinations)
+                if self.menu.n_obstacles != '':
+                    Config.NUMBEROFOBSTACLES = int(self.menu.n_obstacles)
                 self.learning_rate = self.menu.learning_rate
                 self.discount_factor = self.menu.discount_factor
                 self.exploration = self.menu.explration_probability
@@ -65,7 +68,7 @@ class Main:
 
             elif (state == STATE_GAME):
                 game = Game(self.screen, False)
-                (gameEndCode, score) = game.start(n_airplanes = self.n_airplanes, n_destinations = self.n_destinations)
+                (gameEndCode, score) = game.start(n_airplanes = self.n_airplanes)
                 if (gameEndCode == Config.GAME_CODE_TIME_UP):
                     state = STATE_GAME ###
                 elif (gameEndCode == Config.CODE_KILL):

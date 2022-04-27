@@ -32,7 +32,7 @@ def load_sound(name):
     try:
         sound = pygame.mixer.Sound(fullname)
     except pygame.error, message:
-        print 'Cannot load sound:', wav
+        print('Cannot load sound:', wav)
         raise SystemExit, message
     return sound
 
@@ -70,7 +70,8 @@ class Aircraft(Sprite):
 		self.nametext = self.namefont.render(self.callsign, True, (0,255,0),(0,0,0))
 	def position(self):
 		return (self.x,self.y)
- 	def speed(self, x_vel, y_vel):
+
+	def speed(self, x_vel, y_vel):
 		self.x_vel = x_vel
 		self.y_vel = y_vel
 		if self.x_vel > 10: 
@@ -92,14 +93,14 @@ class Aircraft(Sprite):
 		x = speed * math.cos(math.radians(heading))
 		y = speed * math.sin(math.radians(heading))
 		vector = (x,y)
-		print vector
+		print( vector)
 		self.speed(x,y)
 		#self.speed(1,1)
 	def render(self):
 		self.x += self.x_vel
 		self.y += self.y_vel
 		self.rotate = self.ac_heading
-        	self.bitmap = pygame.transform.rotate(self.loaded_image, self.rotate)
+		self.bitmap = pygame.transform.rotate(self.loaded_image, self.rotate)
 		if self.x > LEFT_MAX: 
 			self.speed(0,0)
 		if self.y > DOWN_MAX: 
@@ -116,7 +117,7 @@ class Aircraft(Sprite):
 		x_diff = end_x - self.x
 		y_diff = end_y - self.y
 		heading = (math.degrees(math.atan2(y_diff,x_diff)))
-		print "New Heading: %i" %heading
+		print ("New Heading: %i" %heading)
 		self.new_course(heading,speed) 
 
 def Intersect(s1_x, s1_y, s2_x, s2_y):
@@ -179,14 +180,14 @@ quit = 0
 current_dest = 0
 waypoints = [(600,600),(600,200),(200,400),(200,200)]
 
-print len(waypoints)-1
+print(len(waypoints)-1)
 
 #ac1.new_course(navigate(ac1.x,ac1.y,100,900),2)
 ac1.navigate(waypoints[current_dest],6)
-print ac1.x_vel
-print ac1.y_vel
+print(ac1.x_vel)
+print( ac1.y_vel)
 
-def reached_dest((pos1x,pos1y),(pos2x,pos2y)):
+def reached_dest((pos1x, pos1y), (pos2x, pos2y)):
 	x = (pos2x - pos1x)**2
 	y = (pos2y - pos1y)**2
 	distance = math.sqrt(x+y)
@@ -212,7 +213,7 @@ while quit == 0:
 		ac1.navigate(waypoints[current_dest],10)
 	else:
 		abc = 1
-		print "%s %s" % (ac1.position(),waypoints[current_dest]) 
+		print("%s %s" % (ac1.position(),waypoints[current_dest])) 
 		#print ac1.position() 
 		#print waypoints[current_dest]
 
@@ -236,14 +237,14 @@ while quit == 0:
 
 	if alien.x >= 1024 and len(enemies) > 0:
 		aliendecision = random.randint(0,9999)
-		print "Alien Decision: ", aliendecision
+		print( "Alien Decision: ", aliendecision)
 		if aliendecision < 100:
-			print "Alien Released"
+			print( "Alien Released")
 			alien.x = 0
 			alien.y = 20
 			alien.speed(2,1)
 		else:
-			print "Alien Not Released"
+			print( "Alien Not Released")
 
 
 	for count in range(0, len(ourmissiles)):

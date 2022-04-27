@@ -8,6 +8,7 @@ class Config:
     NUMBEROFAIRCRAFT = 30;              #Number of aircraft spawning during the game
     NUMBEROFDESTINATIONS = 6;           #Number of destinations spawning during the game
     NUMBEROFOBSTACLES = 5;
+    NUMBEROFSPAWNPOINTS = 10;
     FRAMERATE = 40                      #Framerate of the main game loop
 
     MAX_WAYPOINTS = 6;                  #Max user-selectable waypoints per a/c
