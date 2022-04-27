@@ -92,7 +92,7 @@ class Menu :
         discount_factor_rect = pygame.Rect(4*self.SCREEN_W//8, self.SCREEN_H//8 + 5*shift, 150, 34)
         exploration_rect = pygame.Rect(4*self.SCREEN_W//8, self.SCREEN_H//8 + 6*shift, 150, 34)
         start_game_rect = pygame.Rect(self.SCREEN_W - 150, self.SCREEN_H - 100 , 100, 50)
-        end_game_rect = pygame.Rect(50, self.SCREEN_H - 100 , 100, 50)
+        end_game_rect = pygame.Rect(50, self.SCREEN_H - 100 , 150, 50)
         color_active = pygame.Color('lightskyblue3')
         color_passive = pygame.Color('gray15')
         color = {
@@ -162,6 +162,7 @@ class Menu :
 
                     if end_game_rect.collidepoint(event.pos):
                         self.active['end_game'] = True
+                        self.menuEnd = Config.CODE_KILL
                     else:
                         self.active['end_game'] = False
                 
@@ -269,8 +270,7 @@ class Menu :
                 color['start_game'] = color_passive
 
             if self.active['end_game']:
-                pygame.quit()
-                break
+                color['end_game'] = color_active
             else:
                 color['end_game'] = color_passive
 

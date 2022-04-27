@@ -34,7 +34,7 @@ class Main:
         self.menu = Menu(self.screen)
         self.high = HighScore(self.screen)
         # Number of airplanes
-        self.n_airplanes = self.menu.n_planes
+        self.n_airplanes = 1
         self.n_spawn = self.menu.n_spawn_points
         self.n_destinations = self.menu.n_destinations
         self.n_obstacles = self.menu.n_obstacles
@@ -49,11 +49,14 @@ class Main:
 
         while (exit == 0):
             if (state == STATE_MENU):
-                menuEndCode = 0
+                menuEndCode = None
                 menuEndCode = self.menu.start()
-
+                if menuEndCode == Config.CODE_KILL:
+                    exit = 1
+                    pygame.quit()
                 # Getting all these values from user
-                self.n_airplanes = int(self.menu.n_planes)
+                if self.menu.n_planes != '':
+                    self.n_airplanes = int(self.menu.n_planes)
                 if self.menu.n_spawn_points != '':
                     Config.NUMBEROFSPAWNPOINTS = int(self.menu.n_spawn_points)
                 if self.menu.n_destinations != '':

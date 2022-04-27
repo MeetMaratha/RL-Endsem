@@ -1,7 +1,7 @@
 #   File: game.py
 #   Description: An instance of one game of ATC
-import menu
 import pygame;
+import numpy as np
 import random;
 import math;
 import pygame;
@@ -330,14 +330,28 @@ class Game:
             if ((at != a) and (not a.selected)):
                 if (Utility.locDistSq(a.getLocation(), at.getLocation()) < ((3 * Config.AC_COLLISION_RADIUS) ** 2) ):
                     #a.state = Aircraft.AC_STATE_NEAR
-                    # 'at' is intruder 
-                    distance_to_intruder = Utility.locDistSq(a.getLocation(), at.getLocation())
-
+                    
                     a.image = Aircraft.AC_IMAGE_NEAR
                     if self.demomode == False:
                         sound = pygame.mixer.Sound("data/sounds/warning.ogg")
                         channel = sound.play()
                     #channel.set_volume(1, 1)
+                    
+                    
+                    # 'at' is intruder 
+                    distance_to_intruder = Utility.locDistSq(a.getLocation(), at.getLocation())
+                    (x0, y0) = a.getLocation()
+                    (x0_w, y0_w) = a.waypoints[0].getLocation()
+                    (x1, y1) = at.getLocation()
+                    (x1_w, y1_w) = at.waypoints[0].getLocation()
+                    m1_rho = (y0_w - y0)/(x0_w - x0)
+                    m2_rho = (y1 - y0)/(x1 - x0)
+                    rho = int(360/(np.arctan((m2_rho- m1_rho)/(1+m1_rho*m2_rho))*180/np.pi))
+                    m1_theta = (y0_w - y0)/(x0_w - x0)
+                    m2_theta = (y1_w - y1)/(x1_w - x1)
+                    theta = int(360/(np.arctan((m2_theta- m1_theta)/(1+m1_theta*m2_theta))*180/np.pi))
+
+                    ##### Model here
                     break
                 else:
                     if (a.selected):
