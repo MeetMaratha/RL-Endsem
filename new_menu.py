@@ -162,7 +162,6 @@ class Menu :
 
                     if end_game_rect.collidepoint(event.pos):
                         self.active['end_game'] = True
-                        pygame.quit()
                     else:
                         self.active['end_game'] = False
                 
@@ -270,7 +269,8 @@ class Menu :
                 color['start_game'] = color_passive
 
             if self.active['end_game']:
-                color['end_game'] = color_active
+                pygame.quit()
+                break
             else:
                 color['end_game'] = color_passive
 
