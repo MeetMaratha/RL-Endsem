@@ -323,13 +323,16 @@ class Game:
             ac1.image = Aircraft.AC_IMAGE_NEAR # later set to Aircraft.AC_IMAGE_COLLIDED
             ac2.image = Aircraft.AC_IMAGE_NEAR
 
-
+    ## Collision
     def __highlightImpendingCollision(self, a):
         for at in self.aircraft:
             # Skip current aircraft or currently selected aircraft (because it remains orange)
             if ((at != a) and (not a.selected)):
                 if (Utility.locDistSq(a.getLocation(), at.getLocation()) < ((3 * Config.AC_COLLISION_RADIUS) ** 2) ):
                     #a.state = Aircraft.AC_STATE_NEAR
+                    # 'at' is intruder 
+                    distance_to_intruder = Utility.locDistSq(a.getLocation(), at.getLocation())
+
                     a.image = Aircraft.AC_IMAGE_NEAR
                     if self.demomode == False:
                         sound = pygame.mixer.Sound("data/sounds/warning.ogg")
@@ -355,7 +358,7 @@ class Game:
 
     def __generateAircraftSpawnEvents(self):
         (self.aircraftspawntimes, self.aircraftspawns) = AircraftSpawnEvent.generateGameSpawnEvents(Game.AERIALPANE_W, Game.AERIALPANE_H, self.destinations, Config.NUMBEROFSPAWNPOINTS)
-        while self.__areSpawnEventsTooClose(self.aircraftspawntimes, self.aircraftspawns) == True:
+        while self.__areSpawnEventsTooClose(self.aircraftspawntimes, self.aircraftspawns) == True and Config.NUMBEROFSPAWNPOINTS > 1:
             (self.aicraftspawntime, self.aircraftspawns) = AircraftSpawnEvent.generateGameSpawnEvents(Game.AERIALPANE_W, Game.AERIALPANE_H, self.destinations, Config.NUMBEROFSPAWNPOINTS)
 
     def __areSpawnEventsTooClose(self, times, spawns):

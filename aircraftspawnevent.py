@@ -91,7 +91,6 @@ class AircraftSpawnEvent:
         # elif side == 4 and side != previous:
         #     loc = (0, random.randint(0, screen_h))
         index = random.randint(0, len(randspawnpoints) -1)
-        print(index)
         loc = randspawnpoints[index]
         side = index % 4 +1
         return (loc), side

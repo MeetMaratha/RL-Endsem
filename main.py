@@ -49,7 +49,7 @@ class Main:
 
         while (exit == 0):
             if (state == STATE_MENU):
-                menuEndCode = None
+                menuEndCode = 0
                 menuEndCode = self.menu.start()
 
                 # Getting all these values from user
@@ -75,6 +75,7 @@ class Main:
                     state = STATE_GAME ###
                 elif (gameEndCode == Config.GAME_CODE_USER_END):
                     state = STATE_MENU
+                    self.menu.menuEnd = 0
                 elif (gameEndCode == Config.GAME_CODE_AC_COLLIDE):
                     state = STATE_GAME ###
             
