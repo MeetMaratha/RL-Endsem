@@ -1,7 +1,7 @@
 #   File: game.py
 #   Description: An instance of one game of ATC
-import menu
 import pygame;
+import numpy as np
 import random;
 import math;
 import pygame;
@@ -46,7 +46,8 @@ class Game:
         Game.FS_W = Game.SCREEN_W - Game.FSPANE_LEFT
         Game.FS_H = 60
         Game.RADAR_RADIUS = (Game.AERIALPANE_H - 50) / 2
-
+        AircraftSpawnEvent.spawnpoint = Config.NUMBEROFSPAWNPOINTS
+        print(f'Number of spawn points : {AircraftSpawnEvent.spawnpoint}')
         #Imagey type stuff
         self.font = pygame.font.Font(None, 30)
         self.screen = screen
@@ -87,7 +88,7 @@ class Game:
 
         self.app.init(self.cnt_main, self.screen)
 
-    def start(self, n_airplanes, n_destinations):
+    def start(self, n_airplanes):
         clock = pygame.time.Clock()
         #nextDemoEventTime = random.randint(10000,20000)
         nextDemoEventTime = 6000 # first demo event time is 6 seconds after start of demo
@@ -129,7 +130,7 @@ class Game:
             pygame.draw.circle(self.screen, Game.RADAR_CIRC_COLOR, (int(Game.AERIALPANE_W / 2), int(Game.AERIALPANE_H / 2)), int(Game.RADAR_RADIUS), 1)
 
             #Draw destinations
-            for x in self.destinations[:int(n_destinations)]:
+            for x in self.destinations:
                 x.draw(self.screen)
 
             #Move/redraw/collide aircraft
@@ -217,7 +218,7 @@ class Game:
             self.cnt_fspane.remove(a.getFS())
 
         #4: Spawn new aircraft due for spawning
-        if(len(self.aircraftspawntimes) != 0 and len(self.aircraft) < int(n_airplanes)): ### Change 2 to number of airplanes
+        if(len(self.aircraftspawntimes) != 0 and len(self.aircraft) < n_airplanes): ### Change 2 to number of airplanes
             if self.ms_elapsed >= self.aircraftspawntimes[0]:
                 sp = self.aircraftspawns[0]
                 if(len(self.aircraft) < math.floor(Game.FSPANE_H / 60)):
@@ -322,18 +323,35 @@ class Game:
             ac1.image = Aircraft.AC_IMAGE_NEAR # later set to Aircraft.AC_IMAGE_COLLIDED
             ac2.image = Aircraft.AC_IMAGE_NEAR
 
-
+    ## Collision
     def __highlightImpendingCollision(self, a):
         for at in self.aircraft:
             # Skip current aircraft or currently selected aircraft (because it remains orange)
             if ((at != a) and (not a.selected)):
                 if (Utility.locDistSq(a.getLocation(), at.getLocation()) < ((3 * Config.AC_COLLISION_RADIUS) ** 2) ):
                     #a.state = Aircraft.AC_STATE_NEAR
+                    
                     a.image = Aircraft.AC_IMAGE_NEAR
                     if self.demomode == False:
                         sound = pygame.mixer.Sound("data/sounds/warning.ogg")
                         channel = sound.play()
                     #channel.set_volume(1, 1)
+                    
+                    
+                    # 'at' is intruder 
+                    distance_to_intruder = Utility.locDistSq(a.getLocation(), at.getLocation())
+                    (x0, y0) = a.getLocation()
+                    (x0_w, y0_w) = a.waypoints[0].getLocation()
+                    (x1, y1) = at.getLocation()
+                    (x1_w, y1_w) = at.waypoints[0].getLocation()
+                    m1_rho = (y0_w - y0)/(x0_w - x0)
+                    m2_rho = (y1 - y0)/(x1 - x0)
+                    rho = int(360/(np.arctan((m2_rho- m1_rho)/(1+m1_rho*m2_rho))*180/np.pi))
+                    m1_theta = (y0_w - y0)/(x0_w - x0)
+                    m2_theta = (y1_w - y1)/(x1_w - x1)
+                    theta = int(360/(np.arctan((m2_theta- m1_theta)/(1+m1_theta*m2_theta))*180/np.pi))
+
+                    ##### Model here
                     break
                 else:
                     if (a.selected):
@@ -353,9 +371,9 @@ class Game:
         return foundac
 
     def __generateAircraftSpawnEvents(self):
-        (self.aircraftspawntimes, self.aircraftspawns) = AircraftSpawnEvent.generateGameSpawnEvents(Game.AERIALPANE_W, Game.AERIALPANE_H, self.destinations)
-        while self.__areSpawnEventsTooClose(self.aircraftspawntimes, self.aircraftspawns) == True:
-            (self.aicraftspawntime, self.aircraftspawns) = AircraftSpawnEvent.generateGameSpawnEvents(Game.AERIALPANE_W, Game.AERIALPANE_H, self.destinations)
+        (self.aircraftspawntimes, self.aircraftspawns) = AircraftSpawnEvent.generateGameSpawnEvents(Game.AERIALPANE_W, Game.AERIALPANE_H, self.destinations, Config.NUMBEROFSPAWNPOINTS)
+        while self.__areSpawnEventsTooClose(self.aircraftspawntimes, self.aircraftspawns) == True and Config.NUMBEROFSPAWNPOINTS > 1:
+            (self.aicraftspawntime, self.aircraftspawns) = AircraftSpawnEvent.generateGameSpawnEvents(Game.AERIALPANE_W, Game.AERIALPANE_H, self.destinations, Config.NUMBEROFSPAWNPOINTS)
 
     def __areSpawnEventsTooClose(self, times, spawns):
         ret = False

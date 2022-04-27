@@ -59,7 +59,8 @@ class Menu :
             'learning_rate' : False,
             'discount_factor' : False,
             'exploration' : False,
-            'start_game' : False
+            'start_game' : False,
+            'end_game' : False
             }
         
     
@@ -91,6 +92,7 @@ class Menu :
         discount_factor_rect = pygame.Rect(4*self.SCREEN_W//8, self.SCREEN_H//8 + 5*shift, 150, 34)
         exploration_rect = pygame.Rect(4*self.SCREEN_W//8, self.SCREEN_H//8 + 6*shift, 150, 34)
         start_game_rect = pygame.Rect(self.SCREEN_W - 150, self.SCREEN_H - 100 , 100, 50)
+        end_game_rect = pygame.Rect(50, self.SCREEN_H - 100 , 150, 50)
         color_active = pygame.Color('lightskyblue3')
         color_passive = pygame.Color('gray15')
         color = {
@@ -101,7 +103,8 @@ class Menu :
             'learning_rate' : color_passive,
             'discount_factor' : color_passive,
             'exploration' : color_passive,
-            'start_game' : color_passive
+            'start_game' : color_passive,
+            'end_game' : color_passive
             }
         while self.menuEnd == 0:
             for event in pygame.event.get():
@@ -156,6 +159,12 @@ class Menu :
                         self.menuEnd = Config.MENU_CODE_START
                     else:
                         self.active['start_game'] = False
+
+                    if end_game_rect.collidepoint(event.pos):
+                        self.active['end_game'] = True
+                        self.menuEnd = Config.CODE_KILL
+                    else:
+                        self.active['end_game'] = False
                 
                 if event.type == pygame.KEYDOWN:
                     if self.active['n_planes']:
@@ -260,6 +269,11 @@ class Menu :
             else:
                 color['start_game'] = color_passive
 
+            if self.active['end_game']:
+                color['end_game'] = color_active
+            else:
+                color['end_game'] = color_passive
+
             # Drawing Input Field
             pygame.draw.rect(self.screen, color['n_planes'], n_planes_rect, 2)
             pygame.draw.rect(self.screen, color['n_spawn_points'], n_spawn_rect, 2)
@@ -269,6 +283,7 @@ class Menu :
             pygame.draw.rect(self.screen, color['discount_factor'], discount_factor_rect, 2)
             pygame.draw.rect(self.screen, color['exploration'], exploration_rect, 2)
             pygame.draw.rect(self.screen, color['start_game'], start_game_rect)
+            pygame.draw.rect(self.screen, color['end_game'], end_game_rect)
 
             # Writing text in input field
             n_planes_text = Texty.render(self.n_planes,True, (255,255,255))
@@ -279,6 +294,7 @@ class Menu :
             discount_factor_text = Texty.render(self.discount_factor,True, (255,255,255))
             exploration_text = Texty.render(self.explration_probability,True, (255,255,255))
             start_game_text = Texty.render("START",True, (255,255,255))
+            end_game_text = Texty.render("END GAME",True, (255,255,255))
 
             name_shift = 300
             # Printing it all on screen
@@ -301,6 +317,7 @@ class Menu :
             self.screen.blit(discount_factor_text, (discount_factor_rect.x + 5, discount_factor_rect.y + 2))
             self.screen.blit(exploration_text, (exploration_rect.x + 5, exploration_rect.y + 2))
             self.screen.blit(start_game_text, (start_game_rect.x + 15, start_game_rect.y + 10))
+            self.screen.blit(end_game_text, (end_game_rect.x + 15, end_game_rect.y + 10))
 
             # Reloading Screen
             pygame.display.flip()

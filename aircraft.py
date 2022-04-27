@@ -134,6 +134,7 @@ class Aircraft:
 
 	#Location/heading update function
     def update(self):
+        # print(self.waypoints)
         if(self.__reachedWaypoint(self.location, self.waypoints[0].getLocation())):
             #Reached next waypoint, pop it
             self.waypoints.pop(0)
