@@ -206,7 +206,7 @@ class Game:
                 a.draw(self.screen)
 
             #Check collisions
-            self.__highlightImpendingCollision(a)
+            self.__highlightImpendingCollision(a, epsilon = 0.5, Q_table=None, N_table=None)
             for ac_t in self.aircraft:
                 if(ac_t != a):
                     self.__handleAircraftCollision(ac_t, a)
@@ -324,7 +324,7 @@ class Game:
             ac2.image = Aircraft.AC_IMAGE_NEAR
 
     ## Collision
-    def __highlightImpendingCollision(self, a):
+    def __highlightImpendingCollision(self, a, epsilon, Q_table, N_table):
         for at in self.aircraft:
             # Skip current aircraft or currently selected aircraft (because it remains orange)
             if ((at != a) and (not a.selected)):
@@ -338,20 +338,28 @@ class Game:
                     #channel.set_volume(1, 1)
                     
                     
-                    # 'at' is intruder 
+                    # 'a' is intruder 
                     distance_to_intruder = Utility.locDistSq(a.getLocation(), at.getLocation())
-                    (x0, y0) = a.getLocation()
-                    (x0_w, y0_w) = a.waypoints[0].getLocation()
-                    (x1, y1) = at.getLocation()
-                    (x1_w, y1_w) = at.waypoints[0].getLocation()
-                    m1_rho = (y0_w - y0)/(x0_w - x0)
-                    m2_rho = (y1 - y0)/(x1 - x0)
-                    rho = int(360/(np.arctan((m2_rho- m1_rho)/(1+m1_rho*m2_rho))*180/np.pi))
-                    m1_theta = (y0_w - y0)/(x0_w - x0)
-                    m2_theta = (y1_w - y1)/(x1_w - x1)
-                    theta = int(360/(np.arctan((m2_theta- m1_theta)/(1+m1_theta*m2_theta))*180/np.pi))
-
+                    (x0, y0) = at.getLocation()
+                    (x1, y1) = a.getLocation()
+                    (x1_w, y1_w) = a.waypoints[0].getLocation()
+                    rho = self.getAngle(x0= x0, y0=y0, x1=x1, y1=y1)
+                    theta = self.getAngle(x0= x1, y0=y1, x1=x1_w, y1=y1_w)
+                    print(a.waypoints)
                     ##### Model here
+                    if np.random.rand() < epsilon:
+                        action = np.random.randint(0, 5)
+                    else:
+                        action = 0
+                        # action = np.argmax(Q_table[distance_to_intruder, rho, theta])
+                    radius = 200
+                    a.step(action, radius)
+                    # intruder_reward = - (radius**2 - distance_to_intruder**2)/(radius**2/500)
+                    # distance_reward = a.distanceToGo()
+                    # total_reward = intruder_reward + distance_reward
+                    # N_table[distance_to_intruder, rho, theta, action] += 1
+                    # Q_table[distance_to_intruder, rho, theta, action] = Q_table[distance_to_intruder, rho, theta, action] + 1/N_table[distance_to_intruder, rho, theta, action] * (total_reward - Q_table[distance_to_intruder, rho, theta, action])
+                    print(a.waypoints)
                     break
                 else:
                     if (a.selected):
@@ -398,6 +406,22 @@ class Game:
 
     def __generateDestinations(self):
         self.destinations = Destination.generateGameDestinations(Game.AERIALPANE_W, Game.AERIALPANE_H)
+
+    def getAngle(self, x0, y0, x1, y1):
+        if x1 - x0 > 0:
+            angle = 270 + np.arctan((y1 - y0)/(x1 - x0))*180/np.pi
+            if y1 - y0 == 0:
+                angle = 270
+        elif x1 - x0 < 0:
+            angle = 90 + np.arctan((y1 - y0)/(x1 - x0))*180/np.pi
+            if y1 - y0 == 0:
+                angle = 90
+        else:
+            if y1 - y0 > 0:
+                angle = 0
+            else:
+                angle = 180
+        return int(angle/36)
 
     def __generateObstacles(self):
         self.obstacles = Obstacle.generateGameObstacles(Game.AERIALPANE_W, Game.AERIALPANE_H, self.destinations)

@@ -94,3 +94,4 @@ class AircraftSpawnEvent:
         loc = randspawnpoints[index]
         side = index % 4 +1
         return (loc), side
+    

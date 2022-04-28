@@ -183,3 +183,28 @@ class Aircraft:
             return True
         else:
             return False
+
+    def step(self, action, radius):
+        if action == 1:
+            location = (radius * np.cos(90 + 2*36*np.pi/180), radius * np.sin(90 + 2*36*np.pi/180))
+            waypoint = Waypoint(location)
+            self.addWaypoint(waypoint)
+        elif action == 2:
+            location = (radius * np.cos(90 + 36*np.pi/180), radius * np.sin(90 + 36*np.pi/180))
+            waypoint = Waypoint(location)
+            self.addWaypoint(waypoint)
+        elif action == 3:
+            location = (radius * np.cos(90 - 36*np.pi/180), radius * np.sin(90 - 36*np.pi/180))
+            waypoint = Waypoint(location)
+            self.addWaypoint(waypoint)
+        elif action == 4:
+            location = (radius * np.cos(90 - 2*36*np.pi/180), radius * np.sin(90 - 2*36*np.pi/180))
+            waypoint = Waypoint(location)
+            self.addWaypoint(waypoint)
+
+    def distanceToGo(self):
+        distance = Utility.locDist(self.getLocation(), self.waypoints[0].getLocation())
+        for i in range(1, len(self.waypoints)):
+            distance += Utility.locDist(self.waypoints[i - 1], self.waypoints[i])
+        return distance
+        
