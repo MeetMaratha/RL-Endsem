@@ -66,7 +66,9 @@ class Menu :
     
     def __mouseMenuOver(self, pos):
         if ((self.SCREEN_W - 150 < pos[0] < self.SCREEN_W - 50) and (self.SCREEN_H - 100 < pos[1] < self.SCREEN_H - 50)):
-                return 0
+            return 0
+        elif ((50 < pos[0] < 200) and (self.SCREEN_H - 100 < pos[1] < self.SCREEN_H - 50)):
+            return 1
         else:
             return -1
     
@@ -116,6 +118,11 @@ class Menu :
                     self.active['start_game'] = True
                 else:
                     self.active['start_game'] = False
+
+                if self.__mouseMenuOver(pygame.mouse.get_pos()) == 1:
+                    self.active['end_game'] = True
+                else:
+                    self.active['end_game'] = False
                 
                 
                 if event.type == pygame.MOUSEBUTTONDOWN:
@@ -237,7 +244,7 @@ class Menu :
             if self.active['n_spawn_points']:
                 color['n_spawn_points'] = color_active
             else:
-                color['n_spawn_ponts'] = color_passive
+                color['n_spawn_points'] = color_passive
             
             if self.active['n_destinations']:
                 color['n_destinations'] = color_active
