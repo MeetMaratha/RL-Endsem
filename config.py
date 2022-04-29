@@ -11,7 +11,7 @@ class Config:
     NUMBEROFSPAWNPOINTS = 10;
     FRAMERATE = 40                      #Framerate of the main game loop
 
-    MAX_WAYPOINTS = 6;                  #Max user-selectable waypoints per a/c
+    MAX_WAYPOINTS = 1000;                  #Max user-selectable waypoints per a/c
     
     SCORE_REACHDEST = 200               #Score for reaching destination
     SCORE_OBS_COLLIDE = -20             #Score for hitting obstacle
@@ -20,10 +20,10 @@ class Config:
 
     AC_SPEED_MIN = 100
     AC_SPEED_MAX = 1000
-    AC_SPEED_DEFAULT = 200              #Aircraft starting speed
+    AC_SPEED_DEFAULT = 1000              #Aircraft starting speed
     AC_SPEED_SCALEFACTOR = 2000.0       #Knots - pixel conversion ratio
-    AC_COLLISION_RADIUS = 20            #Aircraft collision radius (pixels)
-    AC_DRAW_COLLISION_RADIUS = False    #Draw collision radius?
+    AC_COLLISION_RADIUS = 50//3            #Aircraft collision radius (pixels)
+    AC_DRAW_COLLISION_RADIUS = True    #Draw collision radius?
 
     GAME_CODE_USER_END = 1              #Code for user clicking 'end game'
     GAME_CODE_TIME_UP = 2               #Code for the game time expiring
@@ -34,7 +34,7 @@ class Config:
 
     CODE_KILL = -10                     #Immediate game exit code
 
-    GAME_FULLSCREEN = False              #Game full screen toggle (debug)
+    GAME_FULLSCREEN = True              #Game full screen toggle (debug)
     
     GAME_DEMOMODE = False               #Are we in demo mode?
     GAME_DEMOTIMEOUT = 6000			

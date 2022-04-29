@@ -88,7 +88,7 @@ class Game:
 
         self.app.init(self.cnt_main, self.screen)
 
-    def start(self, n_airplanes):
+    def start(self, n_airplanes, epsilon, Q_table, N_table):
         clock = pygame.time.Clock()
         #nextDemoEventTime = random.randint(10000,20000)
         nextDemoEventTime = 6000 # first demo event time is 6 seconds after start of demo
@@ -134,7 +134,7 @@ class Game:
                 x.draw(self.screen)
 
             #Move/redraw/collide aircraft
-            self.__update(n_airplanes)
+            self.__update(n_airplanes, epsilon, Q_table, N_table)
             self.__handleAircraftObstacleCollisions()
 
             #Draw black rect over RHS of screen, to occult bits of plane/obstacle that may be there
@@ -186,7 +186,7 @@ class Game:
         if(self.ac_selected != None):
             self.ac_selected.setSelected(True)
             
-    def __update(self, n_airplanes):
+    def __update(self, n_airplanes, epsilon, Q_table, N_table):
 
         #1: Update the positions of all existing aircraft
         #2: Check if any aircraft have collided with an obstacle
@@ -205,11 +205,11 @@ class Game:
             else:
                 a.draw(self.screen)
 
-            #Check collisions
-            self.__highlightImpendingCollision(a, epsilon = 0.5, Q_table=None, N_table=None)
-            for ac_t in self.aircraft:
-                if(ac_t != a):
-                    self.__handleAircraftCollision(ac_t, a)
+            # #Check collisions
+            # self.__highlightImpendingCollision(a, epsilon, Q_table, N_table)
+            # for ac_t in self.aircraft:
+            #     if(ac_t != a):
+            #         self.__handleAircraftCollision(ac_t, a)
 
         for a in ac_removal:
             if(self.ac_selected == a):
@@ -217,6 +217,13 @@ class Game:
             self.aircraft.remove(a)
             self.cnt_fspane.remove(a.getFS())
 
+        for n in range(0, len(self.aircraft)):
+            #Check collisions
+            a = self.aircraft[n]
+            self.__highlightImpendingCollision(a, epsilon, Q_table, N_table)
+            for ac_t in self.aircraft:
+                if(ac_t != a):
+                    self.__handleAircraftCollision(ac_t, a)
         #4: Spawn new aircraft due for spawning
         if(len(self.aircraftspawntimes) != 0 and len(self.aircraft) < n_airplanes): ### Change 2 to number of airplanes
             if self.ms_elapsed >= self.aircraftspawntimes[0]:
@@ -339,27 +346,21 @@ class Game:
                     
                     
                     # 'a' is intruder 
-                    distance_to_intruder = Utility.locDistSq(a.getLocation(), at.getLocation())
+                    distance_to_intruder = int(Utility.locDist(a.getLocation(), at.getLocation())/3)
                     (x0, y0) = at.getLocation()
                     (x1, y1) = a.getLocation()
                     (x1_w, y1_w) = a.waypoints[0].getLocation()
                     rho = self.getAngle(x0= x0, y0=y0, x1=x1, y1=y1)
                     theta = self.getAngle(x0= x1, y0=y1, x1=x1_w, y1=y1_w)
-                    print(a.waypoints)
                     ##### Model here
                     if np.random.rand() < epsilon:
                         action = np.random.randint(0, 5)
                     else:
-                        action = 0
-                        # action = np.argmax(Q_table[distance_to_intruder, rho, theta])
-                    radius = 200
-                    a.step(action, radius)
-                    # intruder_reward = - (radius**2 - distance_to_intruder**2)/(radius**2/500)
-                    # distance_reward = a.distanceToGo()
-                    # total_reward = intruder_reward + distance_reward
-                    # N_table[distance_to_intruder, rho, theta, action] += 1
-                    # Q_table[distance_to_intruder, rho, theta, action] = Q_table[distance_to_intruder, rho, theta, action] + 1/N_table[distance_to_intruder, rho, theta, action] * (total_reward - Q_table[distance_to_intruder, rho, theta, action])
-                    print(a.waypoints)
+                        action = np.argmax(Q_table[distance_to_intruder, rho, theta])
+                    # radius = 200
+                    reward = a.step(action, at)
+                    N_table[distance_to_intruder, rho, theta, action] += 1
+                    Q_table[distance_to_intruder, rho, theta, action] = Q_table[distance_to_intruder, rho, theta, action] + 1/N_table[distance_to_intruder, rho, theta, action] * (reward - Q_table[distance_to_intruder, rho, theta, action])
                     break
                 else:
                     if (a.selected):
