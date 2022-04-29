@@ -7,6 +7,7 @@ from game import *;
 from new_menu import *;
 from highs import *
 import os;
+import pickle
 
 STATE_MENU = 1
 STATE_GAME = 2
@@ -14,6 +15,8 @@ STATE_DEMO = 3
 STATE_HIGH = 4
 STATE_KILL = 5
 
+Q_table = np.random.randn(50, 36, 36, 5) # Size = Distance to Inruder(50 pixels), Angle to Intruder(36 bins), Relative heading to intruder (36 bins), actions (5)
+N_table = np.zeros((50, 36, 36, 5))
 class Main:
 
     BG_COLOR = (0, 0, 0)
@@ -34,13 +37,11 @@ class Main:
         self.menu = Menu(self.screen)
         self.high = HighScore(self.screen)
         # Number of airplanes
-        self.n_airplanes = 1
-        self.n_spawn = self.menu.n_spawn_points
-        self.n_destinations = self.menu.n_destinations
-        self.n_obstacles = self.menu.n_obstacles
-        self.learning_rate = self.menu.learning_rate
-        self.discount_factor = self.menu.discount_factor
-        self.exploration = self.menu.explration_probability
+        self.n_airplanes = Config.NUMBEROFAIRCRAFT
+        self.learning_rate = 0
+        self.discount_factor = 0
+        self.exploration = 0
+        self.n_episodes = 0 
 
     def run(self):
         state = STATE_MENU ####
@@ -63,24 +64,37 @@ class Main:
                     Config.NUMBEROFDESTINATIONS = int(self.menu.n_destinations)
                 if self.menu.n_obstacles != '':
                     Config.NUMBEROFOBSTACLES = int(self.menu.n_obstacles)
-                self.learning_rate = self.menu.learning_rate
-                self.discount_factor = self.menu.discount_factor
-                self.exploration = self.menu.explration_probability
+                self.learning_rate = float(self.menu.learning_rate)
+                self.discount_factor = float(self.menu.discount_factor)
+                self.exploration = float(self.menu.explration_probability)
                 if (menuEndCode == Config.MENU_CODE_START):
                     state = STATE_GAME
 
             elif (state == STATE_GAME):
                 game = Game(self.screen, False)
-                (gameEndCode, score) = game.start(n_airplanes = self.n_airplanes)
-                if (gameEndCode == Config.GAME_CODE_TIME_UP):
-                    state = STATE_GAME ###
-                elif (gameEndCode == Config.CODE_KILL):
-                    state = STATE_GAME ###
-                elif (gameEndCode == Config.GAME_CODE_USER_END):
+                (gameEndCode, score) = game.start(n_airplanes = self.n_airplanes, epsilon = self.exploration, Q_table = Q_table, N_table = N_table)
+                # if (gameEndCode == Config.GAME_CODE_TIME_UP):
+                #     state = STATE_GAME ###
+                # elif (gameEndCode == Config.CODE_KILL):
+                #     state = STATE_GAME ###
+                # elif (gameEndCode == Config.GAME_CODE_USER_END):
+                #     state = STATE_MENU
+                #     self.menu.menuEnd = 0
+                # elif (gameEndCode == Config.GAME_CODE_AC_COLLIDE):
+                #     state = STATE_GAME ###
+                if self.n_episodes < 15:
+                    if gameEndCode == Config.GAME_CODE_USER_END:
+                        state = STATE_MENU
+                        self.menu.menuEnd = 0
+                    else:
+                        state = STATE_GAME
+                        self.n_episodes += 1
+                else:
+                    with open('Q_table_e_greedy.pickle', 'wb') as f:
+                        pickle.dump(Q_table, f)
                     state = STATE_MENU
                     self.menu.menuEnd = 0
-                elif (gameEndCode == Config.GAME_CODE_AC_COLLIDE):
-                    state = STATE_GAME ###
+
             
 if __name__ == '__main__':
     game_main = Main()

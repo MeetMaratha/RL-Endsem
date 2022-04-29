@@ -184,27 +184,50 @@ class Aircraft:
         else:
             return False
 
-    def step(self, action, radius):
-        if action == 1:
-            location = (radius * np.cos(90 + 2*36*np.pi/180), radius * np.sin(90 + 2*36*np.pi/180))
-            waypoint = Waypoint(location)
-            self.addWaypoint(waypoint)
-        elif action == 2:
-            location = (radius * np.cos(90 + 36*np.pi/180), radius * np.sin(90 + 36*np.pi/180))
-            waypoint = Waypoint(location)
-            self.addWaypoint(waypoint)
-        elif action == 3:
-            location = (radius * np.cos(90 - 36*np.pi/180), radius * np.sin(90 - 36*np.pi/180))
-            waypoint = Waypoint(location)
-            self.addWaypoint(waypoint)
-        elif action == 4:
-            location = (radius * np.cos(90 - 2*36*np.pi/180), radius * np.sin(90 - 2*36*np.pi/180))
-            waypoint = Waypoint(location)
-            self.addWaypoint(waypoint)
+    def step(self, action, another):
+        radius = 50
+        (x, y) = self.getLocation()
+        distance_to_waypoint = Utility.locDist(self.getLocation(), self.waypoints[0].getLocation())/3
+        # print(f'Radius : {radius}')
+        if distance_to_waypoint - radius < 5 and len(self.waypoints) > 1:
+            if action == 1: # Hard Left
+                location = (x + radius * np.cos(90 + 2*36*np.pi/180), y + radius * np.sin(90 + 2*36*np.pi/180))
+                self.waypoints[0].setLocation(location)
+            elif action == 2: # Medium Left
+                location = (x + radius * np.cos(90 + 36*np.pi/180), y + radius * np.sin(90 + 36*np.pi/180))
+                self.waypoints[0].setLocation(location)
+            elif action == 3: # Medium Right
+                location = (x + radius * np.cos(90 - 36*np.pi/180), y + radius * np.sin(90 - 36*np.pi/180))
+                self.waypoints[0].setLocation(location)
+            elif action == 4: # Hard Right
+                location = (x + radius * np.cos(90 - 2*36*np.pi/180), y + radius * np.sin(90 - 2*36*np.pi/180))
+                self.waypoints[0].setLocation(location)
+        else:
+            if action == 1: # Hard Left
+                location = (x + radius * np.cos(90 + 2*36*np.pi/180), y + radius * np.sin(90 + 2*36*np.pi/180))
+                waypoint = Waypoint(location)
+                self.addWaypoint(waypoint)
+            elif action == 2: # Medium Left
+                location = (x + radius * np.cos(90 + 36*np.pi/180), y + radius * np.sin(90 + 36*np.pi/180))
+                waypoint = Waypoint(location)
+                self.addWaypoint(waypoint)
+            elif action == 3: # Medium Right
+                location = (x + radius * np.cos(90 - 36*np.pi/180), y + radius * np.sin(90 - 36*np.pi/180))
+                waypoint = Waypoint(location)
+                self.addWaypoint(waypoint)
+            elif action == 4: # Hard Right
+                location = (x + radius * np.cos(90 - 2*36*np.pi/180), y + radius * np.sin(90 - 2*36*np.pi/180))
+                waypoint = Waypoint(location)
+                self.addWaypoint(waypoint)
+        print(f'Plane : {self.getLocation()} | Waypoint : {self.waypoints[0].getLocation()}')
+        distance_to_intruder = Utility.locDistSq(self.getLocation(), another.getLocation())
+        intruder_reward = - (radius**2 - distance_to_intruder**2)/(radius**2/500)
+        distance_reward = self.distanceToGo()
+        return intruder_reward + distance_reward
 
     def distanceToGo(self):
         distance = Utility.locDist(self.getLocation(), self.waypoints[0].getLocation())
         for i in range(1, len(self.waypoints)):
-            distance += Utility.locDist(self.waypoints[i - 1], self.waypoints[i])
+            distance += Utility.locDist(self.waypoints[i - 1].getLocation(), self.waypoints[i].getLocation())
         return distance
         
