@@ -47,7 +47,6 @@ class Game:
         Game.FS_H = 60
         Game.RADAR_RADIUS = (Game.AERIALPANE_H - 50) / 2
         AircraftSpawnEvent.spawnpoint = Config.NUMBEROFSPAWNPOINTS
-        print(f'Number of spawn points : {AircraftSpawnEvent.spawnpoint}')
         #Imagey type stuff
         self.font = pygame.font.Font(None, 30)
         self.screen = screen
@@ -62,6 +61,7 @@ class Game:
         self.destinations = []
         self.aircraftspawntimes = []
         self.aircraftspawns = []
+        self.Q_table_values_used = []
 
         #UI vars
         self.ac_selected = None
@@ -88,7 +88,7 @@ class Game:
 
         self.app.init(self.cnt_main, self.screen)
 
-    def start(self, n_airplanes, epsilon, Q_table, N_table):
+    def start(self, n_episode, n_airplanes, epsilon, Q_table, N_table, choice, alpha, gamma):
         clock = pygame.time.Clock()
         #nextDemoEventTime = random.randint(10000,20000)
         nextDemoEventTime = 6000 # first demo event time is 6 seconds after start of demo
@@ -134,7 +134,7 @@ class Game:
                 x.draw(self.screen)
 
             #Move/redraw/collide aircraft
-            self.__update(n_airplanes, epsilon, Q_table, N_table)
+            self.__update(n_airplanes, epsilon, Q_table, N_table, choice, alpha, gamma)
             self.__handleAircraftObstacleCollisions()
 
             #Draw black rect over RHS of screen, to occult bits of plane/obstacle that may be there
@@ -150,8 +150,11 @@ class Game:
                 #Draw score/time indicators
                 sf_score = self.font.render("Score: " + str(self.score), True, Game.COLOR_SCORETIME)
                 sf_time = self.font.render("Time: " + str( math.floor((Config.GAMETIME - self.ms_elapsed) / 1000) ), True, Game.COLOR_SCORETIME)
+                sf_episode = self.font.render("Episode : " + str( n_episode + 1 ), True, Game.COLOR_SCORETIME)
+
                 self.screen.blit(sf_score, (Game.FSPANE_LEFT + 30, 10))
                 self.screen.blit(sf_time, (Game.FSPANE_LEFT + 30, 40))
+                self.screen.blit(sf_episode, (Game.FSPANE_LEFT + 30, 70))
             else:
                 #if (self.ms_elapsed / 1000) % 2 == 0:
                     sf_demo = pygame.font.Font(None, 50).render("DEMO MODE!", True, (255, 100, 100))
@@ -173,7 +176,7 @@ class Game:
         #Game over, display game over message
         # self.__displayPostGameDialog()
 
-        return (self.gameEndCode, self.score)
+        return (self.gameEndCode, self.score, self.Q_table_values_used)
         
     #Request a new selected aircraft
     def requestSelected(self, ac):
@@ -186,7 +189,7 @@ class Game:
         if(self.ac_selected != None):
             self.ac_selected.setSelected(True)
             
-    def __update(self, n_airplanes, epsilon, Q_table, N_table):
+    def __update(self, n_airplanes, epsilon, Q_table, N_table, choice, alpha, gamma):
 
         #1: Update the positions of all existing aircraft
         #2: Check if any aircraft have collided with an obstacle
@@ -220,7 +223,7 @@ class Game:
         for n in range(0, len(self.aircraft)):
             #Check collisions
             a = self.aircraft[n]
-            self.__highlightImpendingCollision(a, epsilon, Q_table, N_table)
+            self.__highlightImpendingCollision(a, epsilon, Q_table, N_table, choice, alpha, gamma)
             for ac_t in self.aircraft:
                 if(ac_t != a):
                     self.__handleAircraftCollision(ac_t, a)
@@ -331,7 +334,7 @@ class Game:
             ac2.image = Aircraft.AC_IMAGE_NEAR
 
     ## Collision
-    def __highlightImpendingCollision(self, a, epsilon, Q_table, N_table):
+    def __highlightImpendingCollision(self, a, epsilon, Q_table, N_table, choice, alpha, gamma):
         for at in self.aircraft:
             # Skip current aircraft or currently selected aircraft (because it remains orange)
             if ((at != a) and (not a.selected)):
@@ -353,14 +356,35 @@ class Game:
                     rho = self.getAngle(x0= x0, y0=y0, x1=x1, y1=y1)
                     theta = self.getAngle(x0= x1, y0=y1, x1=x1_w, y1=y1_w)
                     ##### Model here
-                    if np.random.rand() < epsilon:
-                        action = np.random.randint(0, 5)
-                    else:
-                        action = np.argmax(Q_table[distance_to_intruder, rho, theta])
-                    # radius = 200
-                    reward = a.step(action, at)
-                    N_table[distance_to_intruder, rho, theta, action] += 1
-                    Q_table[distance_to_intruder, rho, theta, action] = Q_table[distance_to_intruder, rho, theta, action] + 1/N_table[distance_to_intruder, rho, theta, action] * (reward - Q_table[distance_to_intruder, rho, theta, action])
+                    if choice == 0:   # Epsilon Greedy
+                        if np.random.rand() < epsilon:
+                            action = np.random.randint(0, 5)
+                        else:
+                            action = np.argmax(Q_table[distance_to_intruder, rho, theta])
+                        # radius = 200
+                        reward = a.step(action, distance_to_intruder)
+                        N_table[distance_to_intruder, rho, theta, action] += 1
+                        Q_table[distance_to_intruder, rho, theta, action] = Q_table[distance_to_intruder, rho, theta, action] + 1/N_table[distance_to_intruder, rho, theta, action] * (reward - Q_table[distance_to_intruder, rho, theta, action])
+                        self.Q_table_values_used.append([distance_to_intruder, rho, theta, action])
+                    elif choice == 1:     # Sarsa
+                        if np.random.rand() < epsilon:
+                            action = np.random.randint(0, 5)
+                        else:
+                            action = np.argmax(Q_table[distance_to_intruder, rho, theta])
+                        old_values = [distance_to_intruder, rho, theta, action]
+                        reward = a.step(action, distance_to_intruder)
+                        self.Q_table_values_used.append([distance_to_intruder, rho, theta, action])
+                        new_location_a = a.NewLocation(a.location, a.heading, a.speed)
+                        new_location_at = at.NewLocation(at.location, at.heading, at.speed)
+                        (x1_w, y1_w) = a.waypoints[0].getLocation()
+                        distance_to_intruder_prime = int(Utility.locDist(new_location_a, new_location_at)/3)
+                        rho_prime = self.getAngle(x0= new_location_a[0], y0=new_location_a[1], x1=new_location_at[0], y1=new_location_at[1])
+                        theta_prime = self.getAngle(x0= new_location_at[0], y0=new_location_at[1], x1=x1_w, y1=y1_w)
+                        if np.random.rand() < epsilon:
+                            action_prime = np.random.randint(0, 5)
+                        else:
+                            action_prime = np.argmax(Q_table[distance_to_intruder_prime, rho_prime, theta_prime])
+                        Q_table[old_values] = Q_table[old_values] + alpha * (reward + gamma * Q_table[distance_to_intruder_prime, rho_prime, theta_prime, action_prime] - Q_table[old_values])
                     break
                 else:
                     if (a.selected):

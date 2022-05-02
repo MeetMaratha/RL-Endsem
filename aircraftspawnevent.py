@@ -42,7 +42,6 @@ class AircraftSpawnEvent:
                 randspawnpoints.append((random.randint(0, screen_w), screen_h))
             elif i % 4 == 3:
                 randspawnpoints.append((0, random.randint(0,screen_h)))
-        print(len(randspawnpoints))
         for x in range(1, Config.NUMBEROFAIRCRAFT):
             randtime.append(random.randint(1, Config.GAMETIME))
         randtime.sort()

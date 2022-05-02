@@ -38,10 +38,13 @@ class Main:
         self.high = HighScore(self.screen)
         # Number of airplanes
         self.n_airplanes = Config.NUMBEROFAIRCRAFT
-        self.learning_rate = 0
-        self.discount_factor = 0
-        self.exploration = 0
-        self.n_episodes = 0 
+        self.learning_rate = None
+        self.discount_factor = None
+        self.exploration = None
+        self.n_episodes = 0
+        self.choice = None
+        self.Q_table = None
+        self.N_table = None
 
     def run(self):
         state = STATE_MENU ####
@@ -55,6 +58,7 @@ class Main:
                 if menuEndCode == Config.CODE_KILL:
                     exit = 1
                     pygame.quit()
+                    break
                 # Getting all these values from user
                 if self.menu.n_planes != '':
                     self.n_airplanes = int(self.menu.n_planes)
@@ -67,12 +71,20 @@ class Main:
                 self.learning_rate = float(self.menu.learning_rate)
                 self.discount_factor = float(self.menu.discount_factor)
                 self.exploration = float(self.menu.explration_probability)
+                self.choice = int(self.menu.model)
+                if self.menu.q == '':
+                    self.Q_table = np.random.randn(50, 36, 36, 5)
+                else:
+                    with open(self.menu.q + '.pickle', 'rb') as f:
+                        self.Q_table = pickle.load(f)
+                if self.choice == 0:
+                    self.N_table = np.zeros((50, 36, 36, 5))
                 if (menuEndCode == Config.MENU_CODE_START):
                     state = STATE_GAME
 
             elif (state == STATE_GAME):
                 game = Game(self.screen, False)
-                (gameEndCode, score) = game.start(n_airplanes = self.n_airplanes, epsilon = self.exploration, Q_table = Q_table, N_table = N_table)
+                (gameEndCode, score, Q_values_used) = game.start(n_episode = self.n_episodes, n_airplanes = self.n_airplanes, epsilon = self.exploration, Q_table = self.Q_table, N_table = self.N_table, choice = self.choice, alpha = self.learning_rate, gamma = self.discount_factor)
                 # if (gameEndCode == Config.GAME_CODE_TIME_UP):
                 #     state = STATE_GAME ###
                 # elif (gameEndCode == Config.CODE_KILL):
@@ -81,19 +93,35 @@ class Main:
                 #     state = STATE_MENU
                 #     self.menu.menuEnd = 0
                 # elif (gameEndCode == Config.GAME_CODE_AC_COLLIDE):
-                #     state = STATE_GAME ###
-                if self.n_episodes < 15:
-                    if gameEndCode == Config.GAME_CODE_USER_END:
-                        state = STATE_MENU
-                        self.menu.menuEnd = 0
+                #     state = STATE_GAME ###1
+                for value in Q_values_used:
+                    self.Q_table[value] += score/len(Q_values_used)
+                if gameEndCode == Config.GAME_CODE_USER_END:
+                    if self.choice == 0:
+                        with open('Q_table_e_greedy.pickle', 'wb') as f:
+                            pickle.dump(Q_table, f)
                     else:
-                        state = STATE_GAME
-                        self.n_episodes += 1
-                else:
-                    with open('Q_table_e_greedy.pickle', 'wb') as f:
-                        pickle.dump(Q_table, f)
+                        with open('Q_table_sarsa.pickle', 'wb') as f:
+                            pickle.dump(Q_table, f)
                     state = STATE_MENU
                     self.menu.menuEnd = 0
+                self.n_episodes += 1
+                # if self.n_episodes < 15:
+                #     if gameEndCode == Config.GAME_CODE_USER_END:
+                #         state = STATE_MENU
+                #         self.menu.menuEnd = 0
+                    # else:
+                    #     state = STATE_GAME
+                    #     self.n_episodes += 1
+                # else:
+                #     if self.choice == 0:
+                #         with open('Q_table_e_greedy.pickle', 'wb') as f:
+                #             pickle.dump(Q_table, f)
+                #     else:
+                #         with open('Q_table_sarsa.pickle', 'wb') as f:
+                #             pickle.dump(Q_table, f)
+                #     state = STATE_MENU
+                #     self.menu.menuEnd = 0
 
             
 if __name__ == '__main__':
