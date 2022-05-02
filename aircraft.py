@@ -171,6 +171,12 @@ class Aircraft:
         location = (location[0] + x_diff, location[1] + y_diff)
         return location
 
+    def NewLocation(self, location, heading, speed):
+        x_diff = (speed / Config.AC_SPEED_SCALEFACTOR) * math.sin(math.radians(heading))
+        y_diff = -(speed / Config.AC_SPEED_SCALEFACTOR) * math.cos(math.radians(heading))
+        location = (location[0] + x_diff, location[1] + y_diff)
+        return location
+
 	#Check whether I have reached the given waypoint
     def __reachedWaypoint(self, location, waypoint):
         if Utility.locDistSq(location, waypoint) < ((self.speed/Config.AC_SPEED_SCALEFACTOR) ** 2):
@@ -184,24 +190,28 @@ class Aircraft:
         else:
             return False
 
-    def step(self, action, another):
+    def step(self, action, distance_to_intruder):
         radius = 50
         (x, y) = self.getLocation()
-        distance_to_waypoint = Utility.locDist(self.getLocation(), self.waypoints[0].getLocation())/3
+        distance_to_waypoint = Utility.locDist(self.getLocation(), self.waypoints[0].getLocation())
         # print(f'Radius : {radius}')
         if distance_to_waypoint - radius < 5 and len(self.waypoints) > 1:
             if action == 1: # Hard Left
                 location = (x + radius * np.cos(90 + 2*36*np.pi/180), y + radius * np.sin(90 + 2*36*np.pi/180))
                 self.waypoints[0].setLocation(location)
+                self.heading = self.__calculateHeading(self.location, self.waypoints[0].getLocation())
             elif action == 2: # Medium Left
                 location = (x + radius * np.cos(90 + 36*np.pi/180), y + radius * np.sin(90 + 36*np.pi/180))
                 self.waypoints[0].setLocation(location)
+                self.heading = self.__calculateHeading(self.location, self.waypoints[0].getLocation())
             elif action == 3: # Medium Right
                 location = (x + radius * np.cos(90 - 36*np.pi/180), y + radius * np.sin(90 - 36*np.pi/180))
                 self.waypoints[0].setLocation(location)
+                self.heading = self.__calculateHeading(self.location, self.waypoints[0].getLocation())
             elif action == 4: # Hard Right
                 location = (x + radius * np.cos(90 - 2*36*np.pi/180), y + radius * np.sin(90 - 2*36*np.pi/180))
                 self.waypoints[0].setLocation(location)
+                self.heading = self.__calculateHeading(self.location, self.waypoints[0].getLocation())
         else:
             if action == 1: # Hard Left
                 location = (x + radius * np.cos(90 + 2*36*np.pi/180), y + radius * np.sin(90 + 2*36*np.pi/180))
@@ -219,10 +229,8 @@ class Aircraft:
                 location = (x + radius * np.cos(90 - 2*36*np.pi/180), y + radius * np.sin(90 - 2*36*np.pi/180))
                 waypoint = Waypoint(location)
                 self.addWaypoint(waypoint)
-        print(f'Plane : {self.getLocation()} | Waypoint : {self.waypoints[0].getLocation()}')
-        distance_to_intruder = Utility.locDistSq(self.getLocation(), another.getLocation())
         intruder_reward = - (radius**2 - distance_to_intruder**2)/(radius**2/500)
-        distance_reward = self.distanceToGo()
+        distance_reward = 100 - self.distanceToGo()
         return intruder_reward + distance_reward
 
     def distanceToGo(self):

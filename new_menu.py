@@ -51,6 +51,9 @@ class Menu :
         self.learning_rate = ''
         self.discount_factor = ''
         self.explration_probability = ''
+        self.model = ''
+        self.q = ''
+
         self.active = {
             'n_planes' : False,
             'n_spawn_points' : False,
@@ -59,6 +62,8 @@ class Menu :
             'learning_rate' : False,
             'discount_factor' : False,
             'exploration' : False,
+            'model' : False,
+            'q_table' : False,
             'start_game' : False,
             'end_game' : False
             }
@@ -85,7 +90,8 @@ class Menu :
         learning_rate_name = Texty.render("Learning Rate : ", 0, WHITE)
         discount_factor_name = Texty.render("Discount Factor : ", 0, WHITE)
         exploration_name = Texty.render("Exploration Probability : ", 0, WHITE)
-        start_game_name = Texty.render("START GAME", 0, WHITE)
+        model_name = Texty.render("Epsilon Greedy(0)/ Sarsa(1) : ", 0, WHITE)
+        q_name = Texty.render("Q_table : ", 0, WHITE)
         n_planes_rect = pygame.Rect(4*self.SCREEN_W//8, self.SCREEN_H//8 + 0*shift, 150, 34)
         n_spawn_rect = pygame.Rect(4*self.SCREEN_W//8, self.SCREEN_H//8 + 1*shift, 150, 34)
         n_destinations_rect = pygame.Rect(4*self.SCREEN_W//8, self.SCREEN_H//8 + 2*shift, 150, 34)
@@ -93,6 +99,8 @@ class Menu :
         learning_rate_rect = pygame.Rect(4*self.SCREEN_W//8, self.SCREEN_H//8 + 4*shift, 150, 34)
         discount_factor_rect = pygame.Rect(4*self.SCREEN_W//8, self.SCREEN_H//8 + 5*shift, 150, 34)
         exploration_rect = pygame.Rect(4*self.SCREEN_W//8, self.SCREEN_H//8 + 6*shift, 150, 34)
+        model_rect = pygame.Rect(4*self.SCREEN_W//8, self.SCREEN_H//8 + 7*shift, 150, 34)
+        q_rect = pygame.Rect(4*self.SCREEN_W//8, self.SCREEN_H//8 + 8*shift, 150, 34)
         start_game_rect = pygame.Rect(self.SCREEN_W - 150, self.SCREEN_H - 100 , 100, 50)
         end_game_rect = pygame.Rect(50, self.SCREEN_H - 100 , 150, 50)
         color_active = pygame.Color('lightskyblue3')
@@ -105,6 +113,8 @@ class Menu :
             'learning_rate' : color_passive,
             'discount_factor' : color_passive,
             'exploration' : color_passive,
+            'model' : color_passive,
+            'q_table' : color_passive,
             'start_game' : color_passive,
             'end_game' : color_passive
             }
@@ -161,6 +171,16 @@ class Menu :
                     else:
                         self.active['exploration'] = False
 
+                    if model_rect.collidepoint(event.pos):
+                        self.active['model'] = True
+                    else:
+                        self.active['model'] = False
+
+                    if q_rect.collidepoint(event.pos):
+                        self.active['q_table'] = True
+                    else:
+                        self.active['q_table'] = False
+                                        
                     if start_game_rect.collidepoint(event.pos):
                         self.active['start_game'] = True
                         self.menuEnd = Config.MENU_CODE_START
@@ -229,6 +249,20 @@ class Menu :
                             t = event.unicode
                             if t in valid_num + ['.']:
                                 self.explration_probability += t
+
+                    if self.active['model']:
+                        if event.key == pygame.K_BACKSPACE:
+                            self.model = self.model[:-1]
+                        else:
+                            t = event.unicode
+                            if t in valid_num:
+                                self.model += t
+                    
+                    if self.active['q_table']:
+                        if event.key == pygame.K_BACKSPACE:
+                            self.q = self.q[:-1]
+                        else:
+                            self.q += event.unicode
                     
                     if event.key == pygame.K_SPACE or event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
                         self.menuEnd = Config.MENU_CODE_START
@@ -270,7 +304,17 @@ class Menu :
                 color['exploration'] = color_active
             else:
                 color['exploration'] = color_passive
+
+            if self.active['model']:
+                color['model'] = color_active
+            else:
+                color['model'] = color_passive
             
+            if self.active['q_table']:
+                color['q_table'] = color_active
+            else:
+                color['q_table'] = color_passive
+
             if self.active['start_game']:
                 color['start_game'] = color_active
             else:
@@ -289,6 +333,8 @@ class Menu :
             pygame.draw.rect(self.screen, color['learning_rate'], learning_rate_rect, 2)
             pygame.draw.rect(self.screen, color['discount_factor'], discount_factor_rect, 2)
             pygame.draw.rect(self.screen, color['exploration'], exploration_rect, 2)
+            pygame.draw.rect(self.screen, color['model'], model_rect, 2)
+            pygame.draw.rect(self.screen, color['q_table'], q_rect, 2)
             pygame.draw.rect(self.screen, color['start_game'], start_game_rect)
             pygame.draw.rect(self.screen, color['end_game'], end_game_rect)
 
@@ -300,9 +346,20 @@ class Menu :
             learning_rate_text = Texty.render(self.learning_rate,True, (255,255,255))
             discount_factor_text = Texty.render(self.discount_factor,True, (255,255,255))
             exploration_text = Texty.render(self.explration_probability,True, (255,255,255))
+            model_text = Texty.render(self.model,True, (255,255,255))
+            q_text = Texty.render(self.q,True, (255,255,255))
             start_game_text = Texty.render("START",True, (255,255,255))
             end_game_text = Texty.render("END GAME",True, (255,255,255))
 
+            n_planes_rect.w = max(n_planes_text.get_width() + 10, n_planes_rect.w)
+            n_spawn_rect.w = max(n_spawn_points_text.get_width() + 10, n_spawn_rect.w)
+            n_destinations_rect.w = max(n_destinations_text.get_width() + 10, n_destinations_rect.w)
+            n_obstacles_rect.w = max(n_obstacles_text.get_width() + 10, n_obstacles_rect.w)
+            learning_rate_rect.w = max(learning_rate_text.get_width() + 10, learning_rate_rect.w)
+            discount_factor_rect.w = max(discount_factor_text.get_width() + 10, discount_factor_rect.w)
+            exploration_rect.w = max(exploration_text.get_width() + 10, exploration_rect.w)
+            model_rect.w = max(model_text.get_width() + 10, model_rect.w)
+            q_rect.w = max(q_text.get_width() + 10, q_rect.w)
             name_shift = 300
             # Printing it all on screen
 
@@ -314,6 +371,8 @@ class Menu :
             self.screen.blit(learning_rate_name, (learning_rate_rect.x -name_shift, learning_rate_rect.y))
             self.screen.blit(discount_factor_name, (discount_factor_rect.x -name_shift, discount_factor_rect.y))
             self.screen.blit(exploration_name, (exploration_rect.x -name_shift, exploration_rect.y))
+            self.screen.blit(model_name, (model_rect.x -name_shift, model_rect.y))
+            self.screen.blit(q_name, (q_rect.x -name_shift, q_rect.y))
 
             # Text inside
             self.screen.blit(n_planes_text, (n_planes_rect.x + 5, n_planes_rect.y + 2))
@@ -323,6 +382,8 @@ class Menu :
             self.screen.blit(learning_rate_text, (learning_rate_rect.x + 5, learning_rate_rect.y + 2))
             self.screen.blit(discount_factor_text, (discount_factor_rect.x + 5, discount_factor_rect.y + 2))
             self.screen.blit(exploration_text, (exploration_rect.x + 5, exploration_rect.y + 2))
+            self.screen.blit(model_text, (model_rect.x + 5, model_rect.y + 2))
+            self.screen.blit(q_text, (q_rect.x + 5, q_rect.y + 2))
             self.screen.blit(start_game_text, (start_game_rect.x + 15, start_game_rect.y + 10))
             self.screen.blit(end_game_text, (end_game_rect.x + 15, end_game_rect.y + 10))
 
