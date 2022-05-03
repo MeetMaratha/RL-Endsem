@@ -8,6 +8,7 @@ from config import *;
 from waypoint import *;
 from utility import *;
 from game import *;
+import numpy as np
 
 class Aircraft:
 
